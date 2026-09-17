@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Tonnel Gifts — Подарки Telegram в реальном времени</title>
+    <link id="dynamicFavicon" rel="icon" type="image/png" href="/logo.png" />
+    <link rel="preconnect" href="https://api.changes.tg" crossorigin />
+    <link rel="preconnect" href="https://api.telegram-gifts.ru" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter+Tight:wght@900&display=swap" />
+
+    <!-- Telegram Mini App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- Автоподмена Favicon для полного масштаба -->
+    <script>
+      (function zoomFavicon() {
+        const img = new Image();
+        img.src = '/logo.png?v=' + Date.now();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 64;
+          canvas.height = 64;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+
+          const aspect = img.width / img.height;
+          let drawW = 64, drawH = 64, offsetX = 0, offsetY = 0;
+          if (aspect < 1) {
+            drawW = 64 / aspect;
+            offsetX = (64 - drawW) / 2;
+          } else {
+            drawH = 64 * aspect;
+            offsetY = (64 - drawH) / 2;
+          }
+          ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+          const iconUrl = canvas.toDataURL('image/png');
+          let link = document.getElementById('dynamicFavicon');
+          if (!link) {
+            link = document.createElement('link');
+            link.id = 'dynamicFavicon';
+            link.rel = 'icon';
+            document.head.appendChild(link);
+          }
+          link.href = iconUrl;
+        };
+      })();
+    </script>
+
+    <!-- Наблюдатель за интерфейсом -->
+    <script>
+      const observer = new MutationObserver(() => {
+        // Подмена логотипа
+        document.querySelectorAll('img[src*="icon-512.png"], .Header-module__mark__04O6').forEach(img => {
+          if (!img.dataset.customLogo) {
+            img.src = "/logo.png";
+            img.srcset = "";
+            img.dataset.customLogo = "true";
+          }
+        });
+
+        // Подмена названия сервиса
+        document.querySelectorAll('.Header-module__word__NV4y').forEach(el => {
+          if (el.textContent.includes("Get Gifts") || el.textContent.includes("StarPulse") || el.textContent.includes("Tunnel Gifts")) {
+            el.textContent = "Tonnel Gifts";
+          }
+        });
+
+        // Подмена маркетов
+        document.querySelectorAll('img[src*="/markets-logo/"]').forEach(img => {
+          if (!img.dataset.fixed) {
+            const filename = img.src.split("/markets-logo/").pop();
+            img.src = "https://telegram-gifts.ru/markets-logo/" + filename;
+            img.dataset.fixed = "true";
+          }
+        });
+
+        // Внедрение вкладки "Профиль" в шапку ПК
+        const nav = document.querySelector('.Header-module__tabs__jkbq');
+        if (nav && !document.getElementById('deskTabProfile')) {
+          const profileBtn = document.createElement('button');
+          profileBtn.type = 'button';
+          profileBtn.id = 'deskTabProfile';
+          profileBtn.className = 'Header-module__tab__-X7D';
+          profileBtn.setAttribute('data-tab', 'profile');
+          profileBtn.innerHTML = '<span>Профиль</span>';
+          profileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            switchCustomTab('profile');
+          });
+          nav.appendChild(profileBtn);
+        }
+      });
+      observer.observe(document.documentElement, { childList: true, subtree: true });
+    </script>
+
+    <script type="module" crossorigin src="/assets/index-CEEpbVGr.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-K8YVlxQV.css">
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- Чистый экран Профиля со щитом рейтинга -->
+    <section id="customProfileView" class="tg-profile-screen" style="display: none;">
+      <div class="tg-profile-wrapper">
+        <div class="tg-profile-avatar-wrap">
+          <div class="tg-profile-avatar-circle" id="tgUserAvatarCircle">
+            <span id="tgUserInitial">A</span>
+            <img id="tgUserPhoto" src="" alt="" style="display: none;" />
+          </div>
+        </div>
+        
+        <!-- Имя пользователя + Индикатор уровня -->
+        <div class="tg-profile-name-row">
+          <h1 class="tg-profile-fullname" id="tgUserFullName">Alexander</h1>
+          <button type="button" class="tg-level-badge" id="tgLevelBadgeBtn" title="Рейтинг активности">
+            <svg class="tg-level-shield" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L4 5V11.5C4 16.5 7.4 21.1 12 22C16.6 21.1 20 16.5 20 11.5V5L12 2Z"/>
+            </svg>
+            <span class="tg-level-digit" id="tgUserLevelDigit">1</span>
+          </button>
+        </div>
+
+        <div class="tg-profile-handle" id="tgUserHandle">@wonderful</div>
+        <div class="tg-profile-id" id="tgUserId">ID: 593810294</div>
+      </div>
+    </section>
+
+    <!-- Модальное окно рейтинга активности (как в Telegram) -->
+    <div class="tg-rating-modal-veil" id="tgRatingModal">
+      <div class="tg-rating-card">
+        <div class="tg-rating-top-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z"/>
+          </svg>
+          <span id="modalXpCounter">0 / 100</span>
+        </div>
+
+        <div class="tg-rating-level-tabs">
+          <div class="tg-rating-tab active" id="modalLvlTabCur">Уровень 1</div>
+          <div class="tg-rating-tab" id="modalLvlTabNext">Уровень 2</div>
+        </div>
+
+        <div class="tg-rating-progress-rail">
+          <div class="tg-rating-progress-fill" id="modalProgressFill" style="width: 0%;"></div>
+        </div>
+
+        <h3 class="tg-rating-title">Рейтинг</h3>
+        <p class="tg-rating-desc">
+          Рейтинг отражает Вашу активность на сайте Tonnel Gifts. На него влияют:
+        </p>
+
+        <div class="tg-rating-rules">
+          <div class="tg-rule-item">
+            <div class="tg-rule-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="tg-rule-info">
+              <div class="tg-rule-lead">Нахождение онлайн</div>
+              <div class="tg-rule-sub">
+                <span class="tg-tag-plus">плюс</span> 30 XP каждые 10 минут активного присутствия на сайте.
+              </div>
+            </div>
+          </div>
+
+          <div class="tg-rule-item">
+            <div class="tg-rule-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div class="tg-rule-info">
+              <div class="tg-rule-lead">Поиск по людям</div>
+              <div class="tg-rule-sub">
+                <span class="tg-tag-plus">плюс</span> 15 XP за проверку пользователей и профилей.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="tg-rating-submit-btn" id="btnRatingOk">
+          👌 OK
+        </button>
+      </div>
+    </div>
+
+    <!-- Мобильная панель Liquid Dock (iOS 26) -->
+    <div class="fixed-dock-layer">
+      <nav class="liquid-glass-dock" id="liquidDockNav">
+        <div class="liquid-active-pill" id="liquidPill"></div>
+
+        <button type="button" class="liquid-dock-btn active" data-target="summary" aria-label="Сводка">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </button>
+
+        <button type="button" class="liquid-dock-btn" data-target="gifts" aria-label="Подарки и Маркет">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </button>
+
+        <button type="button" class="liquid-dock-btn" data-target="people" aria-label="Люди">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+
+        <button type="button" class="liquid-dock-btn" data-target="nft" aria-label="NFT">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+        </button>
+
+        <button type="button" class="liquid-dock-btn" data-target="profile" aria-label="Профиль">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Интерактивная логика навигации, рейтинга и анимаций -->
+    <script>
+      let currentActiveTab = "summary";
+      const pill = document.getElementById("liquidPill");
+
+      // Плавное перемещение индикатора на мобильных
+      function movePillTo(btn) {
+        if (!pill || !btn) return;
+        const navRect = btn.parentElement.getBoundingClientRect();
+        const btnRect = btn.getBoundingClientRect();
+        const offsetLeft = btnRect.left - navRect.left;
+        pill.style.width = `${btnRect.width}px`;
+        pill.style.transform = `translateX(${offsetLeft}px)`;
+      }
+
+      // Перемещение синей линии шапки на ПК под активный таб
+      function moveDeskMarkerTo(targetBtn) {
+        const marker = document.querySelector('.Header-module__marker__K-v3');
+        if (!marker || !targetBtn) return;
+        const nav = targetBtn.closest('.Header-module__tabs__jkbq');
+        if (!nav) return;
+        const offset = targetBtn.offsetLeft;
+        const width = targetBtn.offsetWidth;
+        marker.style.transform = `translateX(${offset}px)`;
+        marker.style.width = `${width}px`;
+      }
+
+      // Переключение вкладок
+      function switchCustomTab(tabKey) {
+        currentActiveTab = tabKey;
+        const profileScreen = document.getElementById("customProfileView");
+        const mainContent = document.querySelector('main');
+
+        if (tabKey === "profile") {
+          if (mainContent) mainContent.style.display = "none";
+          if (profileScreen) profileScreen.style.display = "block";
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        } else {
+          if (profileScreen) profileScreen.style.display = "none";
+          if (mainContent) mainContent.style.display = "";
+          const reactTab = document.querySelector(`.Header-module__tabs__jkbq [data-tab="${tabKey}"]`);
+          if (reactTab && reactTab.id !== 'deskTabProfile') {
+            reactTab.click();
+          }
+        }
+
+        // Синхронизируем ПК-табы
+        document.querySelectorAll('.Header-module__tab__-X7D').forEach(btn => {
+          const isActive = btn.dataset.tab === tabKey;
+          btn.classList.toggle('Header-module__current__7nDH', isActive);
+          if (isActive) moveDeskMarkerTo(btn);
+        });
+
+        // Синхронизируем мобильный док
+        const dockBtns = document.querySelectorAll(".liquid-dock-btn");
+        dockBtns.forEach(btn => {
+          const isActive = btn.dataset.target === tabKey;
+          btn.classList.toggle("active", isActive);
+          if (isActive) movePillTo(btn);
+        });
+      }
+
+      // Перехват кликов по логотипу Tonnel Gifts (переход в Сводку без зависаний)
+      document.addEventListener("click", (e) => {
+        const brand = e.target.closest('.Header-module__brand__ExZG');
+        if (brand) {
+          switchCustomTab('summary');
+        }
+      });
+
+      // Перехват кликов по вкладкам шапки ПК
+      document.addEventListener("click", (e) => {
+        const tabBtn = e.target.closest('.Header-module__tab__-X7D');
+        if (tabBtn && tabBtn.id !== 'deskTabProfile') {
+          const target = tabBtn.dataset.tab;
+          if (target) {
+            switchCustomTab(target);
+          }
+        }
+      });
+
+      // ==========================================
+      // СИСТЕМА УРОВНЕЙ И РЕЙТИНГА XP
+      // ==========================================
+      const LevelSystem = {
+        getXp() {
+          return parseInt(localStorage.getItem('tg_user_xp') || '0', 10);
+        },
+        addXp(amount) {
+          let currentXp = this.getXp() + amount;
+          localStorage.setItem('tg_user_xp', currentXp);
+          this.updateUi();
+        },
+        calculateLevel(xp) {
+          // 1 ур: 0..100, 2 ур: 100..300, 3 ур: 300..600 и т.д.
+          let level = 1;
+          let needed = 100;
+          let acc = 0;
+          while (xp >= acc + needed) {
+            acc += needed;
+            level++;
+            needed = level * 100;
+          }
+          const curInLevel = xp - acc;
+          return { level, curInLevel, neededForNext: needed };
+        },
+        updateUi() {
+          const xp = this.getXp();
+          const info = this.calculateLevel(xp);
+
+          const badgeDigit = document.getElementById("tgUserLevelDigit");
+          if (badgeDigit) badgeDigit.textContent = info.level;
+
+          const modalCounter = document.getElementById("modalXpCounter");
+          if (modalCounter) modalCounter.textContent = `${info.curInLevel} / ${info.neededForNext}`;
+
+          const tabCur = document.getElementById("modalLvlTabCur");
+          const tabNext = document.getElementById("modalLvlTabNext");
+          if (tabCur) tabCur.textContent = `Уровень ${info.level}`;
+          if (tabNext) tabNext.textContent = `Уровень ${info.level + 1}`;
+
+          const progressFill = document.getElementById("modalProgressFill");
+          if (progressFill) {
+            const percent = Math.min(100, Math.round((info.curInLevel / info.neededForNext) * 100));
+            progressFill.style.width = `${percent}%`;
+          }
+        }
+      };
+
+      // Начисление +30 XP каждые 10 минут за нахождение на сайте
+      setInterval(() => {
+        LevelSystem.addXp(30);
+      }, 10 * 60 * 1000);
+
+      // Начисление +15 XP за поиск людей
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          const searchInput = document.querySelector('input[type="search"], .SearchField-module__input__jauE');
+          if (searchInput && document.activeElement === searchInput && searchInput.value.trim().length > 1) {
+            LevelSystem.addXp(15);
+          }
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // Подтягивание профиля из Telegram Mini App
+        let user = null;
+        if (window.Telegram && window.Telegram.WebApp) {
+          const tg = window.Telegram.WebApp;
+          tg.ready();
+          tg.expand();
+          if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            user = tg.initDataUnsafe.user;
+          }
+        }
+
+        const firstName = user?.first_name || "Alexander";
+        const username = user?.username ? "@" + user.username : "@wonderful";
+        const userId = user?.id ? "ID: " + user.id : "ID: 593810294";
+        const photoUrl = user?.photo_url || "";
+        const initial = (firstName.trim()[0] || "A").toUpperCase();
+
+        document.getElementById("tgUserFullName").textContent = firstName;
+        document.getElementById("tgUserHandle").textContent = username;
+        document.getElementById("tgUserId").textContent = userId;
+        document.getElementById("tgUserInitial").textContent = initial;
+
+        if (photoUrl) {
+          const photoImg = document.getElementById("tgUserPhoto");
+          photoImg.src = photoUrl;
+          photoImg.style.display = "block";
+          document.getElementById("tgUserInitial").style.display = "none";
+        }
+
+        // Инициализация рейтинга
+        LevelSystem.updateUi();
+
+        // Открытие и закрытие модалки рейтинга
+        const badgeBtn = document.getElementById("tgLevelBadgeBtn");
+        const ratingModal = document.getElementById("tgRatingModal");
+        const btnOk = document.getElementById("btnRatingOk");
+
+        if (badgeBtn && ratingModal) {
+          badgeBtn.addEventListener("click", () => ratingModal.classList.add("active"));
+        }
+        if (btnOk && ratingModal) {
+          btnOk.addEventListener("click", () => ratingModal.classList.remove("active"));
+        }
+        if (ratingModal) {
+          ratingModal.addEventListener("click", (e) => {
+            if (e.target === ratingModal) ratingModal.classList.remove("active");
+          });
+        }
+
+        // Клики по кнопкам мобильного дока
+        document.querySelectorAll(".liquid-dock-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            switchCustomTab(btn.dataset.target);
+          });
+        });
+
+        // Первичная центровка пилла мобильного дока
+        const activeBtn = document.querySelector(".liquid-dock-btn.active");
+        if (activeBtn) setTimeout(() => movePillTo(activeBtn), 80);
+      });
+    </script>
+  </body>
+</html>
